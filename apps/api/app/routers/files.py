@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
+from app.auth import RequireApiKey
 from app.db.deps import DbConn
 from app.repos import files as files_repo
 from app.repos import proposals as proposals_repo
@@ -27,7 +28,7 @@ def get_file(file_id: UUID, conn: DbConn) -> FileRead:
 
 
 @router.patch("/files/{file_id}", response_model=FileRead)
-def update_file(file_id: UUID, body: FileUpdate, conn: DbConn) -> FileRead:
+def update_file(file_id: UUID, body: FileUpdate, conn: DbConn, _auth: RequireApiKey) -> FileRead:
     row = files_repo.update_file_content(conn, file_id, body.content)
     if row is None:
         raise HTTPException(status_code=404, detail="File not found")
@@ -47,6 +48,7 @@ def create_proposal(
     file_id: UUID,
     body: ProposedUpdateCreate,
     conn: DbConn,
+    _auth: RequireApiKey,
 ) -> ProposedUpdateRead:
     if files_repo.get_file(conn, file_id) is None:
         raise HTTPException(status_code=404, detail="File not found")

@@ -9,12 +9,14 @@ from fastapi.testclient import TestClient
 if not os.environ.get("DATABASE_URL"):
     pytest.skip("DATABASE_URL required for integration smoke tests", allow_module_level=True)
 
+from tests.conftest import TEST_API_KEY
+
 from app.main import app
 
 
 @pytest.fixture()
 def client() -> TestClient:
-    with TestClient(app) as c:
+    with TestClient(app, headers={"X-API-Key": TEST_API_KEY}) as c:
         yield c
 
 

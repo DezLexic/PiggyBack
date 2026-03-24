@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     database_url: str | None = None
     cors_origins: str = "http://localhost:3000"
     api_prefix: str = "/api"
+    admin_api_key: str | None = None
 
     @property
     def cors_origins_list(self) -> list[str]:

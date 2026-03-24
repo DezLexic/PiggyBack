@@ -15,6 +15,7 @@ from app.routers import permissions as permissions_router
 from app.routers import projects as projects_router
 from app.routers import proposal_lifecycle as proposal_lifecycle_router
 from app.routers import workspaces as workspaces_router
+from app.routers import write as write_router
 
 
 @asynccontextmanager
@@ -50,6 +51,7 @@ def create_app() -> FastAPI:
     application.include_router(files_router.router)
     application.include_router(agent_connections_router.router)
     application.include_router(proposal_lifecycle_router.router)
+    application.include_router(write_router.router)
     return application
 
 
