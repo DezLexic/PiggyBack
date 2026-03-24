@@ -27,6 +27,26 @@ def grant_permission(
     return dict(row)
 
 
+def has_permission(
+    conn: Connection,
+    agent_connection_id: UUID,
+    project_id: UUID,
+    permission_type: str,
+) -> bool:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT 1 FROM permissions
+            WHERE agent_connection_id = %s
+              AND project_id = %s
+              AND permission_type = %s
+            LIMIT 1
+            """,
+            (agent_connection_id, project_id, permission_type),
+        )
+        return cur.fetchone() is not None
+
+
 def list_permissions_for_project(conn: Connection, project_id: UUID) -> list[dict[str, Any]]:
     with conn.cursor(row_factory=dict_row) as cur:
         cur.execute(

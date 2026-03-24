@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 
-from app.auth import RequireApiKey
+from app.auth import Caller, assert_project_permission
 from app.db.deps import DbConn
 from app.repos import files as files_repo
 from app.repos import projects as projects_repo
@@ -41,20 +41,25 @@ def _build_response(file_row: dict, version_id: UUID, version_created_at) -> Fil
 
 
 @router.post("/projects/{project_id}/files/write", response_model=FileWriteResponse)
-def write_file(project_id: UUID, body: FileWriteRequest, conn: DbConn, _auth: RequireApiKey) -> FileWriteResponse:
+def write_file(
+    project_id: UUID, body: FileWriteRequest, conn: DbConn, caller: Caller
+) -> FileWriteResponse:
     if projects_repo.get_project(conn, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
-    append = body.mode == "append"
+    assert_project_permission(conn, caller, project_id, ("write",))
     file_row, version_id, version_created_at = files_repo.upsert_file(
-        conn, project_id, body.path, body.content, append=append
+        conn, project_id, body.path, body.content, append=(body.mode == "append")
     )
     return _build_response(file_row, version_id, version_created_at)
 
 
 @router.post("/projects/{project_id}/files/append", response_model=FileWriteResponse)
-def append_file(project_id: UUID, body: FileWriteRequest, conn: DbConn, _auth: RequireApiKey) -> FileWriteResponse:
+def append_file(
+    project_id: UUID, body: FileWriteRequest, conn: DbConn, caller: Caller
+) -> FileWriteResponse:
     if projects_repo.get_project(conn, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    assert_project_permission(conn, caller, project_id, ("write",))
     file_row, version_id, version_created_at = files_repo.upsert_file(
         conn, project_id, body.path, body.content, append=True
     )
@@ -62,9 +67,12 @@ def append_file(project_id: UUID, body: FileWriteRequest, conn: DbConn, _auth: R
 
 
 @router.post("/projects/{project_id}/summary", response_model=FileWriteResponse)
-def write_summary(project_id: UUID, body: SummaryWriteRequest, conn: DbConn, _auth: RequireApiKey) -> FileWriteResponse:
+def write_summary(
+    project_id: UUID, body: SummaryWriteRequest, conn: DbConn, caller: Caller
+) -> FileWriteResponse:
     if projects_repo.get_project(conn, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    assert_project_permission(conn, caller, project_id, ("write",))
     path = SUMMARY_TYPE_TO_PATH[body.type]
     file_row, version_id, version_created_at = files_repo.upsert_file(
         conn, project_id, path, body.content, append=False
@@ -73,9 +81,12 @@ def write_summary(project_id: UUID, body: SummaryWriteRequest, conn: DbConn, _au
 
 
 @router.post("/projects/{project_id}/batch-write", response_model=BatchWriteResponse)
-def batch_write(project_id: UUID, body: BatchWriteRequest, conn: DbConn, _auth: RequireApiKey) -> BatchWriteResponse:
+def batch_write(
+    project_id: UUID, body: BatchWriteRequest, conn: DbConn, caller: Caller
+) -> BatchWriteResponse:
     if projects_repo.get_project(conn, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    assert_project_permission(conn, caller, project_id, ("write",))
     results = []
     for item in body.writes:
         file_row, version_id, version_created_at = files_repo.upsert_file(
