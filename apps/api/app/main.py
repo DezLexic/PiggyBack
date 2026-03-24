@@ -7,10 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.migrate import run_migrations
 from app.db.pool import create_pool
+from app.routers import agent_connections as agent_connections_router
 from app.routers import db as db_router
 from app.routers import files as files_router
 from app.routers import health as health_router
+from app.routers import permissions as permissions_router
 from app.routers import projects as projects_router
+from app.routers import proposal_lifecycle as proposal_lifecycle_router
 from app.routers import workspaces as workspaces_router
 
 
@@ -43,7 +46,10 @@ def create_app() -> FastAPI:
     application.include_router(db_router.router)
     application.include_router(workspaces_router.router)
     application.include_router(projects_router.router)
+    application.include_router(permissions_router.router)
     application.include_router(files_router.router)
+    application.include_router(agent_connections_router.router)
+    application.include_router(proposal_lifecycle_router.router)
     return application
 
 
