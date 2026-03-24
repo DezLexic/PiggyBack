@@ -1,6 +1,6 @@
 # Piggyback
 
-Monorepo for Piggyback: FastAPI (`apps/api`), Next.js (`apps/web`), and optional shared code (`packages/`). Product direction lives in [`core.md`](./core.md); stack and scope are summarized in [`ARCHITECTURE.md`](./ARCHITECTURE.md). The first Postgres schema and REST resources are described in [`docs/data-model.md`](./docs/data-model.md).
+Monorepo for Piggyback: FastAPI (`apps/api`), Next.js (`apps/web`), and optional shared code (`packages/`). Product direction lives in [`core.md`](./core.md); stack and scope are summarized in [`ARCHITECTURE.md`](./ARCHITECTURE.md). The first Postgres schema and REST resources are described in [`docs/data-model.md`](./docs/data-model.md). Agents, project permissions, and proposal accept/reject are summarized in [`docs/trust-model.md`](./docs/trust-model.md).
 
 ## Quick start
 

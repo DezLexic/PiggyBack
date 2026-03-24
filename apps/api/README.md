@@ -42,4 +42,4 @@ Tests are skipped if `DATABASE_URL` is unset. Use a dedicated database if you wa
 
 ## Docs
 
-See [`docs/data-model.md`](../../docs/data-model.md) for entity relationships and rationale.
+See [`docs/data-model.md`](../../docs/data-model.md) for entity relationships and [`docs/trust-model.md`](../../docs/trust-model.md) for agents, grants, and proposal lifecycle.
