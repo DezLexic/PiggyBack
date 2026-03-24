@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listWorkspaces, createWorkspace, type Workspace } from "@/lib/api";
+import { useParams } from "next/navigation";
+import {
+  getWorkspace,
+  listProjects,
+  createProject,
+  type Workspace,
+  type Project,
+} from "@/lib/api";
 
-export default function HomePage() {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+export default function WorkspacePage() {
+  const { id } = useParams<{ id: string }>();
+
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -15,13 +25,16 @@ export default function HomePage() {
   const load = () => {
     setLoading(true);
     setError(null);
-    listWorkspaces()
-      .then(setWorkspaces)
+    Promise.all([getWorkspace(id), listProjects(id)])
+      .then(([ws, projs]) => {
+        setWorkspace(ws);
+        setProjects(projs);
+      })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(load, [id]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +42,12 @@ export default function HomePage() {
     setCreating(true);
     setError(null);
     try {
-      const ws = await createWorkspace(newName.trim());
-      setWorkspaces((prev) => [...prev, ws]);
+      const proj = await createProject(id, newName.trim());
+      setProjects((prev) => [...prev, proj]);
       setNewName("");
       setFormOpen(false);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to create workspace");
+      setError(e instanceof Error ? e.message : "Failed to create project");
     } finally {
       setCreating(false);
     }
@@ -42,14 +55,25 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
+      {/* Breadcrumb */}
+      <nav className="mb-6 flex items-center gap-1.5 text-sm text-zinc-400">
+        <Link href="/" className="hover:text-zinc-600 dark:hover:text-zinc-300">
+          Workspaces
+        </Link>
+        <span>/</span>
+        <span className="text-zinc-700 dark:text-zinc-200">{workspace?.name ?? "…"}</span>
+      </nav>
+
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Workspaces</h1>
+        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {workspace?.name ?? "Loading…"}
+        </h1>
         {!formOpen && (
           <button
             onClick={() => setFormOpen(true)}
             className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            New workspace
+            New project
           </button>
         )}
       </div>
@@ -59,7 +83,7 @@ export default function HomePage() {
           <input
             autoFocus
             type="text"
-            placeholder="Workspace name"
+            placeholder="Project name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="flex-1 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500"
@@ -89,24 +113,23 @@ export default function HomePage() {
 
       {loading ? (
         <p className="mt-8 text-sm text-zinc-400">Loading…</p>
-      ) : workspaces.length === 0 ? (
+      ) : projects.length === 0 ? (
         <div className="mt-12 text-center">
-          <p className="text-sm text-zinc-400">No workspaces yet.</p>
-          <p className="mt-1 text-sm text-zinc-400">Create one to start organising your AI context.</p>
+          <p className="text-sm text-zinc-400">No projects yet. Create one to get started.</p>
         </div>
       ) : (
         <ul className="mt-6 divide-y divide-zinc-100 dark:divide-zinc-800">
-          {workspaces.map((ws) => (
-            <li key={ws.id}>
+          {projects.map((proj) => (
+            <li key={proj.id}>
               <Link
-                href={`/workspaces/${ws.id}`}
+                href={`/projects/${proj.id}`}
                 className="flex items-center justify-between py-3 group"
               >
                 <span className="text-sm font-medium text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-50 dark:group-hover:text-zinc-300">
-                  {ws.name}
+                  {proj.name}
                 </span>
                 <span className="text-xs text-zinc-400">
-                  {new Date(ws.created_at).toLocaleDateString()}
+                  {new Date(proj.created_at).toLocaleDateString()}
                 </span>
               </Link>
             </li>
