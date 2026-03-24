@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-PermissionTypeLiteral = Literal["read", "propose_update"]
+PermissionTypeLiteral = Literal["read", "propose_update", "write"]
 
 
 class PermissionGrant(BaseModel):

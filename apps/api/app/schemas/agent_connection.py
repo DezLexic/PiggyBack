@@ -16,3 +16,9 @@ class AgentConnectionRead(BaseModel):
     name: str
     agent_type: str
     created_at: datetime
+
+
+class AgentConnectionCreated(AgentConnectionRead):
+    """Returned only on POST /agent-connections. Includes the plaintext API key (shown once)."""
+
+    api_key: str
