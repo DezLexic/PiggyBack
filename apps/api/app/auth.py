@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import UUID
@@ -28,7 +29,7 @@ def resolve_caller(
 ) -> CallerInfo:
     if x_api_key is None:
         raise HTTPException(status_code=401, detail="X-API-Key header required")
-    if settings.admin_api_key and x_api_key == settings.admin_api_key:
+    if settings.admin_api_key and secrets.compare_digest(x_api_key, settings.admin_api_key):
         return CallerInfo(is_admin=True)
     key_record = api_keys_repo.verify_api_key(conn, x_api_key)
     if key_record is None:
